@@ -1,0 +1,69 @@
+---
+title: "Lab4"
+output: html_document
+---
+### Виконала: *Бокань Вероніка*
+### Для лабораторної роботи необхідно завантажити файл з даними за посиланням: «https://www.dropbox.com/s/8k1gjgk8cflmpb6/hw1_data.csv?dl=0».В RStudio файл необхідно прочитати за допомогою команди read.csv.
+```{r}
+library(readr)
+data <- read_csv("hw1_data.csv")
+data 
+```
+###  В лабораторній необхідно відповісти на запитання:
+### 1. Які назви стовпців файлу даних?
+```{r}
+names(data)
+```
+
+### 2. Виведіть перші 6 строк фрейму даних.
+```{r}
+data[1:6,]
+```
+
+### 3. Скільки спостерігань (строк) в дата фреймі?
+```{r}
+nrow(data)
+```
+
+### 4. Виведіть останні 10 строк дата фрейму.
+```{r}
+tail(data,10)
+```
+
+### 5. Як багато значень «NA» в стовпці «Ozone»?
+```{r}
+bad <- is.na(data[,"Ozone"])
+sum(bad)
+```
+
+### 6. Яке середнє (mean) стовпця «Ozone». Виключити «NA» значення.
+```{r}
+bad <- is.na(data[,"Ozone"])
+o <- data[,"Ozone"]
+mean(o[!bad])
+```
+
+### 7. Виведіть частину набору даних (subset) зі значенням «Ozone» > 31 та «Temp» > 90. Яке середнє (mean) значень «Solar.R» в цьому наборі даних (subset)?
+```{r}
+o1 <- data[,"Temp"]
+s <-  subset.data.frame(data, o>31 & o1>90)
+s
+mean(s$Solar.R, na.rm = TRUE)
+
+
+```
+
+### 8. Яке середнє значення (mean) для «Temp» для червня («Month» дорівнює 6)?
+```{r}
+w <- subset.data.frame(data, Month == 6)
+mean(w$Temp, na.rm = TRUE)
+```
+
+### 9. Яке максимальне значення «Ozone» для травня («Month» дорівнює 5)?
+
+```{r}
+w2 <- subset.data.frame(data, Month == 5)
+w2
+max(w2$Ozone, na.rm = TRUE)
+```
+
