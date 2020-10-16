@@ -1,0 +1,154 @@
+---
+title: "Додаткова лабораторна робота. Частина 1"
+author: "Бокань Вероніка"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+Частина 1.
+Завантажте файл “olympics.csv” за посиланням https://www.dropbox.com/s/9oayr45v7nj30nv/olympics.csv?dl=0
+Цей файл базується на статті в Wikipedia All Time Olympic Games Medals 
+Спочатку необхідно провести базову обробку файлу.
+Напишіть функцію prepare_set <- function(file_name) {} яка в якості аргументу приймає ім’я файлу і повертає дата фрейм. Збережіть цей дата фрейм в змінну olympics
+olympics <- prepare_set(“olympics.csv”)
+Функція prepare_set повинна виконувати наступні дії:
+1. Зчитати файл
+read.csv("olympics.csv", skip = 1, header = TRUE, encoding="UTF-8",
+stringsAsFactors = FALSE)
+```{r}
+library(readr)
+library(stringr)
+d <- read.csv("olympics.csv", skip = 1, header = TRUE, encoding="UTF-8",
+stringsAsFactors = FALSE)
+
+```
+
+2. Першому стовпцю дати назву “Country”
+```{r}
+colnames(d)[1] <- "Country"
+
+```
+
+3. Автоматично в циклі згенерувати назви останніх стовпців за наступними
+правилами:
+3.1. Видалити з назви “X.U.2116..”, тобто “X.U.2116..Summer” буде
+“Summer”
+```{r}
+for(i in colnames(d)) {
+    new_name <- str_replace_all(i, "X.U.2116..", "")
+    names(d)[names(d) == i] <- new_name
+    }
+```
+
+3.2. “X01..” замінити на “Gold”, тобто “ X01...1” буде “Gold.1”
+3.3. “X02..” та “X03..” замінити на “Silver” та “Bronze” відповідно
+В результаті повинні бути наступні назви стовпців: "Country", "Summer", "Gold", "Silver", "Bronze", "Total", "Winter", "Gold.1", "Silver.1", "Bronze.1", "Total.1", "Games", "Gold.2", "Silver.2", "Bronze.2", "Combined.total"
+```{r}
+for(i in colnames(d)) {
+  new_name <- str_replace_all(i, "X.U.2116..", "")  
+  new_name <- str_replace_all( new_name, "X01..", "Gold")
+  new_name <- str_replace_all( new_name, "X02..", "Silver")
+  new_name <- str_replace_all( new_name, "X03..", "Bronze")
+    
+    names(d)[names(d) == i] <- new_name
+    }
+```
+
+4. Необхідно привести назви країн до виду "Afghanistan", "Algeria" і т.п. Для цього можна використати функцію str_split бібліотеки stringr. В назві країн не повинно бути пробілів на початку та в кінці.
+```{r}
+# str_split щоб повернути список підрядків
+#"\\(" - before "("
+ed_cy <- str_split(d$Country, "[:space:]\\(", simplify=TRUE) #TRUE returns a character matrix.
+  d$Country <- ed_cy[,1]
+```
+
+5. Додайте до дата фрейму новий стовпець “ID”, в який запишіть трибуквений
+код країна. Наприклад, "AFG", "ALG" і т.п.
+```{r}
+d$ID <- str_split(ed_cy[,2],"\\)", simplify=TRUE)[,1]
+d$ID
+```
+
+6. Видаліть з дата фрейму останню строку “Totals”
+```{r}
+d <- d[-dim(d)[1],]
+```
+
+### Результат - готова функція:
+
+```{r}
+ prepare_set <- function(file_name) {
+d <- read.csv(file_name, skip = 1, header = TRUE, encoding="UTF-8",
+stringsAsFactors = FALSE)
+colnames(d)[1] <- "Country"
+for(i in colnames(d)) {
+  new_name <- str_replace_all(i, "X.U.2116..", "")  
+  new_name <- str_replace_all( new_name, "X01..", "Gold")
+  new_name <- str_replace_all( new_name, "X02..", "Silver")
+  new_name <- str_replace_all( new_name, "X03..", "Bronze")
+names(d)[names(d) == i] <- new_name}
+# str_split щоб повернути список підрядків
+#"\\(" - before "("
+ed_cy <- str_split(d$Country, "[:space:]\\(", simplify=TRUE) #TRUE returns a character matrix.
+d$Country <- ed_cy[,1]
+d$ID <- str_split(ed_cy[,2],"\\)", simplify=TRUE)[,1]
+d <- d[-dim(d)[1],]
+return(d)
+ }
+d <- prepare_set("olympics.csv")
+d
+```
+
+Для кожного наступного питання напишіть функцію, яка повертає вказаний
+результат. Назви функції “answer_one” для питання 1, “answer_two” для
+питання 2 і т.д.
+
+Питання 1
+Котра країна виграла найбільшу кількість золотих нагород на літніх іграх?
+Функція повинна повернути одне текстове значення.
+
+```{r}
+answer_one <-  function(){
+  r <- d$Country[which.max(d$Gold)]
+  return (r)
+}
+answer_one()
+```
+
+Питання 2
+Яка країна має найбільшу різницю між кількістю нагород на літніх та зимових
+іграх?
+```{r}
+answer_two <- d$Country[which.max(abs(d$Total - d$Total.1))]
+answer_two
+```
+Питання 3
+В якій крайні найбільша різниця між літніми та зимовими золотими нагородами відносно до загальної кількості нагород (Summer Gold - Winter Gold) / Total Gold.
+Врахувати тільки країни які мають як мінімум по одній нагороді в літніх та
+зимових іграх.
+Функція повинна повернути одне текстове значення.
+```{r}
+answer_three <- function(){
+  cond <- d[d$Gold > 0 & d$Gold.1 > 0,]
+  r <- cond$Country[which.max((cond$Gold - cond$Gold.1)/((cond$Gold + cond$Gold.1)))]
+    return(r)
+}
+answer_three()
+
+```
+
+Питання 4
+Необхідно знайти кількість балів по кожній крайні. Бали рахуються наступним чином: Золота нагорода Gold.2 це три бали, срібна Silver.2 - 2 бали та бронзова Bronze.2 – 1 бал.
+Функція повинна повертати дата фрейм довжиною 146, який складається з двох
+колонок: "Country", "Points".
+```{r}
+answer_four <- function(){
+  POINTS = d$Gold.2*3 + d$Silver.2*2 + d$Bronze.2
+  r <- data.frame(d$Country, POINTS)
+  return(r)
+}
+answer_four()
+```
+
+
