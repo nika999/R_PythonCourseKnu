@@ -1,3 +1,2 @@
 # R_PythonCourseKnu
-## Лабораторні роботи по мовам програмування R та Python
-### КНУ імені Тараса Шевченка.
+## Laboratory works on R and Python programming languages
